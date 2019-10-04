@@ -1847,7 +1847,7 @@ class Player extends EventEmitter<IPublicAPIEvent> {
     return this._priv_trackChoiceManager.disableVideoTrack(currentPeriod);
   }
 
-  enableVideoTrack() {
+  disableAudioOnly() : void {
     if (!this._priv_contentInfos) {
       return;
     }
