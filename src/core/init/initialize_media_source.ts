@@ -56,6 +56,7 @@ import {
 import {
   createManifestFetcher,
   IManifestFetcherParsedResult,
+  IManifestFetcherParserOptions,
   SegmentFetcherCreator,
 } from "../fetchers";
 import { ITextTrackSourceBufferOptions } from "../source_buffers";
@@ -190,13 +191,13 @@ export default function InitializeOnMediaSource(
    * Fetch and parse the manifest from the URL given.
    * Throttled to avoid doing multiple simultaneous requests.
    */
-  const fetchManifest = throttle((manifestURL? : string,
-                                  externalClockOffset? : number)
+  const fetchManifest = throttle((manifestURL : string | undefined,
+                                  options : IManifestFetcherParserOptions)
     : Observable<IWarningEvent | IManifestFetcherParsedResult> =>
       manifestFetcher.fetch(manifestURL).pipe(
         mergeMap((response) => response.type === "warning" ?
           observableOf(response) : // bubble-up warnings
-          response.parse({ externalClockOffset })),
+          response.parse(options)),
         share()));
 
   /** Interface used to download segments. */
@@ -240,7 +241,8 @@ export default function InitializeOnMediaSource(
                                             mapTo(true));
 
   /** Do the first Manifest request. */
-  const initialManifestRequest$ = fetchManifest(url, undefined).pipe(
+  const initialManifestRequest$ = fetchManifest(url, { previousManifest: null,
+                                                       unsafeMode: false }).pipe(
     subscribeOn(asapScheduler), // to launch subscriptions only when all
     share());                   // Observables here are linked
 
